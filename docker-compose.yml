@@ -1,13 +1,32 @@
 version: '3.2'
 networks:
-  iam-network:
+  network:
    driver: bridge
 
+volumes:
+  database:
+    
 services:
+ iam-database:
+  image: postgres:12.5
+  container_name: iam-database
+  restart: always
+  shm_size: 4gb
+  volumes:
+   - database:/var/lib/postgresql/data
+  networks:
+   - network 
+  environment:
+   POSTGRES_PASSWORD: dbpassword
+  ports:
+   - 5440:5432
+
  iam-service:
   image: quay.io/keycloak/keycloak:22.0.1
   container_name: iam-service
   restart: always
+  depends_on:
+   - iam-database 
   ports:
    - 9098:8080
    - 9099:8443
@@ -25,6 +44,6 @@ services:
   volumes:
    - ./iam-files/certes:/opt/keycloak/iam-files/certes
   networks:
-   - iam-network 
-  
+   - network 
+   
  
